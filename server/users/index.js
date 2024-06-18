@@ -2,7 +2,7 @@ import express from 'express';
 import userController from './controller.js';
 import validator from '../common/validation.js';
 import validationSchemas from './validationSchema.js';
-// import authController from '../auth/controller.js';
+import authController from '../auth/controller.js';
 const userRouter = express.Router();
 
 userRouter.post(
@@ -15,6 +15,18 @@ userRouter.post(
   '/login',
   validator(validationSchemas.loginSchema),
   userController.login
+);
+
+userRouter.get(
+  '/generatePhoneOtp',
+  authController.authenticate,
+  userController.generatePhoneOtp
+);
+
+userRouter.post(
+  '/verifyPhoneOtp',
+  authController.authenticate,
+  userController.verifyPhoneOtp
 );
 
 // userRouter.get('/stats', authController.authenticate, userController.stats);

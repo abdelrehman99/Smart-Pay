@@ -2,7 +2,7 @@ import { model, Schema } from 'mongoose';
 import validator from 'validator';
 import { USER, ROLES } from '../common/constants.js';
 import nanoid from '../../config/nanoid.js';
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcrypt';
 
 const userSchema = new Schema(
   {
@@ -47,6 +47,10 @@ const userSchema = new Schema(
         message: 'Please provide a valid phone number',
       },
     },
+    isPhoneVerified: {
+      type: Boolean,
+      default: false,
+    },
     gender: {
       type: String,
       enums: ['Male, Female'],
@@ -59,6 +63,9 @@ const userSchema = new Schema(
     birthDate: {
       type: Date,
       required: true,
+    },
+    phoneOtp: {
+      type: Number,
     },
   },
   { timestamps: true }

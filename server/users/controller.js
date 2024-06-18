@@ -1,7 +1,10 @@
-import Users from './model.js';
-import logger from '../../config/logger.js';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
+import logger from '../../config/logger.js';
+import Users from './model.js';
+import sendSms from '../common/smsService.js';
+import { OTP_MESSAGE } from '../common/constants.js';
+import service from './service.js';
 
 /**
  * @param {import('express').Request<{}, {}, showRequestBody, showRequestQuery>} req
@@ -87,131 +90,65 @@ const login = async (req, res, next) => {
   }
 };
 
-// const stats = async (req, res, next) => {
-//   try {
-//     let { page = 0, limit = 0 } = req.query;
-//     const user = req.user;
-//     page = Number(page);
-//     limit = Number(limit);
+const generatePhoneOtp = async (req, res, next) => {
+  try {
+    const otpLength = 4;
+    const { user, phoneOtp } = await service.generatePhoneOtp(
+      req.user?._id,
+      otpLength
+    );
 
-//     if (user.role != ADMIN)
-//       res.status(401).json({
-//         status: 'failed',
-//         message: 'This user is not allowed to perform this operation',
-//       });
+    const formattedPhone = `+2${user.phone}`;
+    const message = OTP_MESSAGE + String(phoneOtp);
 
-//     const skip = (page - 1) * limit;
+    await sendSms(formattedPhone, message);
 
-//     const adsLookupPipeline = [
-//       {
-//         $lookup: {
-//           from: 'ads',
-//           localField: '_id',
-//           foreignField: 'owner.userId',
-//           as: 'ADS',
-//         },
-//       },
-//       {
-//         $unwind: {
-//           path: '$ADS',
-//         },
-//       },
-//       {
-//         $facet: {
-//           // Pagination stage
-//           pagination: [
-//             { $skip: (page - 1) * limit }, // Skip documents for pagination
-//             { $limit: limit }, // Limit documents for pagination
-//           ],
-//           // Count stage
-//           count: [
-//             { $count: 'totalDocuments' }, // Count total documents
-//           ],
-//         },
-//       },
-//     ];
+    logger.info(
+      `[generatePhoneOtp] otp sent for ${formattedPhone}, is ${phoneOtp}`
+    );
+    res.status(200).json({
+      status: 'success',
+      message: 'Otp sent successfully!',
+    });
+  } catch (err) {
+    logger.error(`[generatePhoneOtp] error occurred ${err}`);
 
-//     // Lookup for properties
-//     const propertiesLookupPipeline = [
-//       {
-//         $lookup: {
-//           from: 'properties',
-//           localField: '_id',
-//           foreignField: 'owner.userId',
-//           as: 'Properties',
-//         },
-//       },
-//       {
-//         $unwind: {
-//           path: '$Properties',
-//         },
-//       },
-//       {
-//         $facet: {
-//           // Pagination stage
-//           pagination: [
-//             { $skip: (page - 1) * limit }, // Skip documents for pagination
-//             { $limit: limit }, // Limit documents for pagination
-//           ],
-//           // Count stage
-//           count: [
-//             { $count: 'totalDocuments' }, // Count total documents
-//           ],
-//         },
-//       },
-//     ];
+    res.status(500).json({
+      status: 'failed',
+      message: err.message,
+    });
+  }
+};
 
-//     // Run aggregation for ads lookup
-//     const adsLookupResult = await Users.aggregate(adsLookupPipeline);
+const verifyPhoneOtp = async (req, res, next) => {
+  try {
+    const { otp } = req.body;
+    const user = req.user;
+    const formattedPhone = `+2${user.phone}`;
+    const isValidOtp = await service.verifyPhoneOtp(otp, user);
 
-//     // Run aggregation for properties lookup
-//     const propertiesLookupResult = await Users.aggregate(
-//       propertiesLookupPipeline
-//     );
+    if (!isValidOtp) {
+      res.status(401).json({
+        status: 'failed',
+        message: 'Otp is wrong or expired!',
+      });
+    }
 
-//     // Extract pagination and count results for ads
-//     const adsPagination =
-//       adsLookupResult.length > 0 ? adsLookupResult[0].pagination : [];
-//     const adsTotalDocuments =
-//       adsLookupResult.length > 0
-//         ? adsLookupResult[0].count[0].totalDocuments
-//         : 0;
+    logger.info(
+      `[verifyPhoneOtp] otp is verified successfully for ${formattedPhone}.`
+    );
+    res.status(200).json({
+      status: 'success',
+      message: 'Otp verified successfully!',
+    });
+  } catch (err) {
+    logger.error(`[verifyPhoneOtp] error occurred ${err}`);
 
-//     // Extract pagination and count results for properties
-//     const propertiesPagination =
-//       propertiesLookupResult.length > 0
-//         ? propertiesLookupResult[0].pagination
-//         : [];
-//     const propertiesTotalDocuments =
-//       propertiesLookupResult.length > 0
-//         ? propertiesLookupResult[0].count[0].totalDocuments
-//         : 0;
+    res.status(500).json({
+      status: 'failed',
+      message: err.message,
+    });
+  }
+};
 
-//     console.log(adsPagination); // Paginated ads data
-//     console.log(adsTotalDocuments); // Total count of ads documents
-
-//     console.log(propertiesPagination); // Paginated properties data
-//     console.log(propertiesTotalDocuments); // Total count of properties documents
-
-//     res.status(200).json({
-//       status: 'success',
-//       // users,
-//       // total: count,
-//       // page,
-//       // limit,
-//       // hasNextPage: page * limit < count,
-//       // hasPreviousPage: page > 1,
-//       // data,
-//     });
-//   } catch (err) {
-//     console.error(err);
-//     logger.error(`[Stats] error occurred ${err}`);
-
-//     res.status(500).json({
-//       status: 'failed',
-//       message: err.message,
-//     });
-//   }
-// };
-
-export default { signup, login };
+export default { signup, login, generatePhoneOtp, verifyPhoneOtp };
