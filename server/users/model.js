@@ -4,6 +4,21 @@ import { USER, ROLES } from '../common/constants.js';
 import nanoid from '../../config/nanoid.js';
 import bcrypt from 'bcrypt';
 
+const cardSchema = new Schema({
+  _id: {
+    type: String,
+    default: () => nanoid(),
+  },
+  name: {
+    type: String,
+    required: true,
+  },
+  number: {
+    type: String,
+    required: true,
+  },
+});
+
 const userSchema = new Schema(
   {
     _id: {
@@ -67,6 +82,14 @@ const userSchema = new Schema(
     phoneOtp: {
       type: Number,
     },
+    balance: {
+      type: Number,
+      default: 0,
+    },
+    defaultCard: {
+      type: cardSchema,
+    },
+    cards: [cardSchema],
   },
   { timestamps: true }
 );

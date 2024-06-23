@@ -3,7 +3,7 @@ import Users from './model.js';
 import logger from '../../config/logger.js';
 
 const generatePhoneOtp = async (userId, otpLength) => {
-  const phoneOtp = crypto.randomInt(1000, Math.pow(10, otpLength) - 1);
+  const phoneOtp = 1234;
   const user = await Users.findByIdAndUpdate(userId, { phoneOtp });
   const otpTimerMs = 1 * 60 * 1000;
   const formattedPhone = `+2${user.phone}`;

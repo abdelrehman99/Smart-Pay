@@ -3,6 +3,7 @@ import helmet from 'helmet';
 import cors from 'cors';
 import morgan from 'morgan';
 import userRouter from './users/index.js';
+import transactionsRouter from './transactions/index.js'
 
 const app = new express();
 
@@ -20,5 +21,6 @@ app.use('/health', (req, res, next) => {
 });
 
 app.use('/api/v0/users', userRouter);
+app.use('/api/v0/transactions', transactionsRouter);
 
 export default app;
