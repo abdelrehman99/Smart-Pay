@@ -101,7 +101,7 @@ const generatePhoneOtp = async (req, res, next) => {
     const formattedPhone = `+2${user.phone}`;
     const message = OTP_MESSAGE + String(phoneOtp);
 
-    await sendSms(formattedPhone, message);
+    // await sendSms(formattedPhone, message);
 
     logger.info(
       `[generatePhoneOtp] otp sent for ${formattedPhone}, is ${phoneOtp}`

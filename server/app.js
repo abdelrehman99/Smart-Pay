@@ -4,6 +4,7 @@ import cors from 'cors';
 import morgan from 'morgan';
 import userRouter from './users/index.js';
 import transactionsRouter from './transactions/index.js'
+import notificationsRouter from './notifications/index.js'
 
 const app = new express();
 
@@ -22,5 +23,6 @@ app.use('/health', (req, res, next) => {
 
 app.use('/api/v0/users', userRouter);
 app.use('/api/v0/transactions', transactionsRouter);
+app.use('/api/v0/notifications', notificationsRouter);
 
 export default app;

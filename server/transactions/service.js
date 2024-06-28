@@ -20,4 +20,11 @@ const sendTransaction = async (senderEmail, receiverEmail, amount) => {
   return transaction;
 };
 
-export default { sendTransaction };
+const getTransactions = async (smartEmail) => {
+  const transactions = await Transactions.find({
+    $or: [{ to: smartEmail }, { from: smartEmail }],
+  }).lean();
+  return transactions;
+};
+
+export default { sendTransaction, getTransactions };

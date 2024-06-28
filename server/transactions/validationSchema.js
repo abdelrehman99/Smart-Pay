@@ -9,4 +9,11 @@ const sendSchema = {
   }).min(2),
 };
 
-export default { sendSchema };
+const transferSchema = {
+  body: Joi.object({
+    smartEmail: Joi.string().required(),
+    amount: Joi.number().greater(0).required(),
+  }).required(),
+};
+
+export default { sendSchema, transferSchema };
