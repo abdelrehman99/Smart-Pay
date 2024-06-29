@@ -80,7 +80,7 @@ const confirmNotification = async (req, res, next) => {
     });
 
     logger.info(
-      `[transfer] ${amount} is sent successfully from ${sender.smartEmail} to ${smartEmail}.`
+      `[transfer] ${amount} is sent successfully from ${sender.smartEmail} to ${receiver}.`
     );
     res.status(200).json({
       status: 'success',
