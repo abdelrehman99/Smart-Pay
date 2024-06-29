@@ -57,10 +57,11 @@ const confirmNotification = async (req, res, next) => {
       });
     }
 
-    if (accept)
-    {
-      console.log(notification.transaction.amount);
-      if (sender?.balance < notification.transaction.amount) {
+    const receiver = notification.transaction.to;
+    const amount = notification.transaction.amount;
+
+    if (accept) {
+      if (sender?.balance < amount) {
         res.status(401).json({
           status: 'failed',
           message: 'Insufficient funds please recharge wallet!',
@@ -68,9 +69,9 @@ const confirmNotification = async (req, res, next) => {
       }
 
       transaction = await transactionService.sendTransaction(
-        notification.transaction.from,
-        notification.transaction.to,
-        notification.transaction.amount
+        sender.smartEmail,
+        receiver,
+        amount
       );
     }
 
