@@ -28,6 +28,20 @@ router.post(
   controller.transfer
 );
 
+router.post(
+  '/rechargeOrDeposit',
+  authController.authenticate,
+  validator(validationSchemas.rechargeOrDepositSchema),
+  controller.rechargeOrDeposit
+);
+
+router.post(
+  '/buyOrSellCrypto',
+  authController.authenticate,
+  validator(validationSchemas.buyOrSellCryptoSchema),
+  controller.buyOrSellCrypto
+);
+
 // router.get('/stats', authController.authenticate, userController.stats);
 
 export default router;

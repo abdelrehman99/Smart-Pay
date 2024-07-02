@@ -1,8 +1,14 @@
 import service from './service.js';
 import Users from '../users/model.js';
 import logger from '../../config/logger.js';
-import { UNVALID_USER_MESSAGE } from '../common/constants.js';
+import {
+  BUY_CRYPTO,
+  CRYPTO_RATES,
+  TRANSACTION,
+  UNVALID_USER_MESSAGE,
+} from '../common/constants.js';
 import notificationsService from '../notifications/service.js';
+import { IsSufficientCrypto, IsSufficientFunds } from './helper.js';
 /**
  * @param {import('express').Request<{}, {}, showRequestBody, showRequestQuery>} req
  * @param {import('express').Response} res
@@ -133,6 +139,97 @@ const transfer = async (req, res, next) => {
   }
 };
 
+const rechargeOrDeposit = async (req, res, next) => {
+  try {
+    const user = req.user;
+    const { cardId, amount, type } = req.body;
+    const cardIdx = user?.cards?.findIndex((el) => {
+      return el._id == cardId;
+    });
+
+    if (
+      cardIdx == -1 ||
+      !IsSufficientFunds(
+        user?.balance,
+        user?.cards[cardIdx]?.balance,
+        type,
+        amount
+      )
+    ) {
+      throw new Error('Insufficient funds or this card does not exist!');
+    }
+
+    const transaction = await service.rechargeOrDepositTransaction(
+      user,
+      type,
+      cardId,
+      amount,
+      cardIdx
+    );
+
+    logger.info(
+      `[rechargeOrDeposit] ${amount} is ${type}ed successfully for ${user.smartEmail} regarding card ${cardId}.`
+    );
+    res.status(200).json({
+      status: 'success',
+      message: 'Transaction is done successfully!',
+      data: transaction,
+    });
+  } catch (err) {
+    logger.error(`[rechargeOrDeposit] error occurred ${err}`);
+
+    res.status(500).json({
+      status: 'failed',
+      message: err.message,
+    });
+  }
+};
+
+const buyOrSellCrypto = async (req, res, next) => {
+  try {
+    const user = req.user;
+    const { crypto, cryptoAmount, type } = req.body;
+    const cryptoBalance = user?.cryptoBalance ? user.cryptoBalance[crypto] : 0;
+
+    if (
+      !IsSufficientCrypto(
+        user?.balance,
+        crypto,
+        cryptoBalance,
+        type,
+        cryptoAmount
+      )
+    ) {
+      throw new Error('Insufficient funds!');
+    }
+
+    const transaction = await service.buyOrSellCryptoTransaction(
+      user,
+      type,
+      crypto,
+      cryptoAmount
+    );
+
+    logger.info(
+      `[buyOrSellCrypto] ${cryptoAmount} is (${
+        type == BUY_CRYPTO ? 'bought' : 'sold'
+      }) successfully for ${user.smartEmail}`
+    );
+    res.status(200).json({
+      status: 'success',
+      message: 'Transaction is done successfully!',
+      data: transaction,
+    });
+  } catch (err) {
+    logger.error(`[buyOrSellCrypto] error occurred ${err}`);
+    console.log(err);
+    res.status(500).json({
+      status: 'failed',
+      message: err.message,
+    });
+  }
+};
+
 const transactions = async (req, res, next) => {
   try {
     const user = req.user;
@@ -143,7 +240,9 @@ const transactions = async (req, res, next) => {
     );
     res.status(200).json({
       status: 'success',
-      data: transactions,
+      data: transactions.filter((el) => {
+        return !el.type || el.type == TRANSACTION;
+      }),
     });
   } catch (err) {
     logger.error(`[transactions] error occurred ${err}`);
@@ -155,4 +254,11 @@ const transactions = async (req, res, next) => {
   }
 };
 
-export default { sendTransaction, receiveTransaction, transfer, transactions };
+export default {
+  sendTransaction,
+  receiveTransaction,
+  transfer,
+  transactions,
+  rechargeOrDeposit,
+  buyOrSellCrypto,
+};

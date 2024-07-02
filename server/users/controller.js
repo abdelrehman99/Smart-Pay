@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt';
 import logger from '../../config/logger.js';
 import Users from './model.js';
 import sendSms from '../common/smsService.js';
-import { OTP_MESSAGE } from '../common/constants.js';
+import { OTP_MESSAGE, CRYPTO_RATES } from '../common/constants.js';
 import service from './service.js';
 
 /**
@@ -128,10 +128,7 @@ const verifyPhoneOtp = async (req, res, next) => {
     const isValidOtp = await service.verifyPhoneOtp(otp, user);
 
     if (!isValidOtp) {
-      res.status(401).json({
-        status: 'failed',
-        message: 'Otp is wrong or expired!',
-      });
+      throw new Error('Otp is wrong or expired!');
     }
 
     logger.info(
@@ -151,4 +148,146 @@ const verifyPhoneOtp = async (req, res, next) => {
   }
 };
 
-export default { signup, login, generatePhoneOtp, verifyPhoneOtp };
+const getCards = async (req, res, next) => {
+  try {
+    const user = req.user;
+    const cards = user?.cards;
+
+    logger.info(
+      `[getCards] ${cards?.length} is returned successfully for ${user.smartEmail}.`
+    );
+    res.status(200).json({
+      status: 'success',
+      message: 'Cards are returned successfully!',
+      data: cards,
+    });
+  } catch (err) {
+    logger.error(`[getCards] error occurred ${err}`);
+
+    res.status(500).json({
+      status: 'failed',
+      message: err.message,
+    });
+  }
+};
+
+const addCard = async (req, res, next) => {
+  try {
+    const { name, number } = req.body;
+    const user = req.user;
+    const card = {
+      name: name.toUpperCase(),
+      number: number,
+    };
+
+    const isAddedBefore = user?.cards?.find((el) => {
+      return el.number == number;
+    });
+
+    if (isAddedBefore) {
+      throw new Error('Card is added before!');
+    }
+
+    const newUser = await Users.findByIdAndUpdate(
+      user._id,
+      { $push: { cards: card } },
+      { new: true }
+    );
+
+    const newCard = newUser.cards.find((el) => {
+      return el.number == number;
+    });
+
+    logger.info(
+      `[addCard] ${newCard} is added successfully for ${newUser.smartEmail}.`
+    );
+    res.status(200).json({
+      status: 'success',
+      message: 'Card is added successfully!',
+      data: newCard,
+    });
+  } catch (err) {
+    logger.error(`[addCard] error occurred ${err}`);
+
+    res.status(500).json({
+      status: 'failed',
+      message: err.message,
+    });
+  }
+};
+
+const deleteCard = async (req, res, next) => {
+  try {
+    const { id: cardId } = req.params;
+    const user = req.user;
+
+    const isValidCard = user?.cards?.find((el) => {
+      return el._id == cardId;
+    });
+
+    if (!isValidCard || !cardId) {
+      throw new Error('This card does not exist!');
+    }
+
+    const newUser = await Users.findByIdAndUpdate(
+      user._id,
+      { $pull: { cards: { _id: cardId } } },
+      { new: true }
+    );
+
+    logger.info(
+      `[deleteCard] ${cardId} is deleted successfully for ${newUser.smartEmail}.`
+    );
+    res.status(200).json({
+      status: 'success',
+      message: 'Card is deleted successfully!',
+      data: newUser?.cards,
+    });
+  } catch (err) {
+    logger.error(`[deleteCard] error occurred ${err}`);
+
+    res.status(500).json({
+      status: 'failed',
+      message: err.message,
+    });
+  }
+};
+
+const getCryptoBalance = async (req, res, next) => {
+  try {
+    const user = req.user;
+    const cryptoBalance = Object.keys(user?.cryptoBalance).map((key) => {
+      return {
+        crypto: key,
+        amount: user?.cryptoBalance[key],
+        totalAmount: CRYPTO_RATES[key] * user?.cryptoBalance[key],
+      };
+    });
+
+    logger.info(
+      `[getCryptoBalance] is returned successfully for ${user.smartEmail}.`
+    );
+    res.status(200).json({
+      status: 'success',
+      data: cryptoBalance,
+    });
+  } catch (err) {
+    logger.error(`[getCryptoBalance] error occurred ${err}`);
+
+    res.status(500).json({
+      status: 'failed',
+      message: err.message,
+    });
+  }
+};
+
+export default {
+  signup,
+  login,
+  generatePhoneOtp,
+  verifyPhoneOtp,
+  addCard,
+  deleteCard,
+  getCards,
+  getCryptoBalance,
+};

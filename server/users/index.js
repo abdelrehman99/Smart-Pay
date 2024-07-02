@@ -29,6 +29,27 @@ userRouter.post(
   userController.verifyPhoneOtp
 );
 
+userRouter.post(
+  '/cards',
+  authController.authenticate,
+  validator(validationSchemas.addCardSchema),
+  userController.addCard
+);
+
+userRouter.delete(
+  '/cards/:id',
+  authController.authenticate,
+  userController.deleteCard
+);
+
+userRouter.get(
+  '/crypto',
+  authController.authenticate,
+  userController.getCryptoBalance
+);
+
+userRouter.get('/cards', authController.authenticate, userController.getCards);
+
 // userRouter.get('/stats', authController.authenticate, userController.stats);
 
 export default userRouter;

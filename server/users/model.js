@@ -1,8 +1,8 @@
 import { model, Schema } from 'mongoose';
 import validator from 'validator';
-import { USER, ROLES } from '../common/constants.js';
 import nanoid from '../../config/nanoid.js';
 import bcrypt from 'bcrypt';
+import { USER, ROLES } from '../common/constants.js';
 
 const cardSchema = new Schema({
   _id: {
@@ -16,6 +16,10 @@ const cardSchema = new Schema({
   number: {
     type: String,
     required: true,
+  },
+  balance: {
+    type: Number,
+    default: Math.random() * (1000000 - 100000) + 100000,
   },
 });
 
@@ -86,6 +90,7 @@ const userSchema = new Schema(
       type: Number,
       default: 0,
     },
+    cryptoBalance: {},
     defaultCard: {
       type: cardSchema,
     },

@@ -31,4 +31,15 @@ const loginSchema = {
   }).required(),
 };
 
-export default { signupSchema, loginSchema };
+const addCardSchema = {
+  body: Joi.object({
+    name: Joi.string()
+      .regex(/\w\s\w/, {
+        name: 'Invalid card name, card name must contain two names',
+      })
+      .required(),
+    number: Joi.string().length(16).required(),
+  }).required(),
+};
+
+export default { signupSchema, loginSchema, addCardSchema };
