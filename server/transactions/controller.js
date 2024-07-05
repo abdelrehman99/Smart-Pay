@@ -21,7 +21,11 @@ const sendTransaction = async (req, res, next) => {
     const { cardNumber, phone, smartEmail, amount } = req.body;
 
     const receiver = await Users.findOne({
-      $or: [{ phone: phone }, { smartEmail: smartEmail }],
+      $or: [
+        { phone: phone },
+        { smartEmail: smartEmail },
+        { 'cards.number': cardNumber },
+      ],
     }).lean();
 
     if (!receiver) {
@@ -68,7 +72,11 @@ const receiveTransaction = async (req, res, next) => {
     const { cardNumber, phone, smartEmail, amount } = req.body;
 
     const sender = await Users.findOne({
-      $or: [{ phone: phone }, { smartEmail: smartEmail }],
+      $or: [
+        { phone: phone },
+        { smartEmail: smartEmail },
+        { 'cards.number': cardNumber },
+      ],
     }).lean();
 
     if (!sender) {

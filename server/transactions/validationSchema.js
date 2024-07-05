@@ -9,7 +9,7 @@ import {
 
 const sendSchema = {
   body: Joi.object({
-    // cardNumber: Joi.string(),
+    cardNumber: Joi.string().length(16),
     phone: Joi.string(),
     smartEmail: Joi.string(),
     amount: Joi.number().greater(0).required(),
