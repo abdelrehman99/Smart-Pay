@@ -254,6 +254,30 @@ const transactions = async (req, res, next) => {
   }
 };
 
+const adminTransactions = async (req, res, next) => {
+  try {
+    const user = req.user;
+    const transactions = await service.getAdminTransactions();
+
+    logger.info(
+      `[adminTransactions] is returned successfully for admin ${user.smartEmail}.`
+    );
+    res.status(200).json({
+      status: 'success',
+      data: transactions.filter((el) => {
+        return !el.type || el.type == TRANSACTION;
+      }),
+    });
+  } catch (err) {
+    logger.error(`[adminTransactions] error occurred ${err}`);
+
+    res.status(500).json({
+      status: 'failed',
+      message: err.message,
+    });
+  }
+};
+
 export default {
   sendTransaction,
   receiveTransaction,
@@ -261,4 +285,5 @@ export default {
   transactions,
   rechargeOrDeposit,
   buyOrSellCrypto,
+  adminTransactions,
 };

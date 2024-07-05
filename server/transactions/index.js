@@ -6,6 +6,11 @@ import authController from '../auth/controller.js';
 const router = express.Router();
 
 router.get('/', authController.authenticate, controller.transactions);
+router.get(
+  '/adminTransactions',
+  authController.authenticate,
+  controller.adminTransactions
+);
 
 router.post(
   '/send',

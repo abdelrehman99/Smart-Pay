@@ -281,6 +281,28 @@ const getCryptoBalance = async (req, res, next) => {
   }
 };
 
+const getBalance = async (req, res, next) => {
+  try {
+    const user = req.user;
+    const balance = user?.balance;
+
+    logger.info(
+      `[getBalance] is returned successfully for ${user.smartEmail}.`
+    );
+    res.status(200).json({
+      status: 'success',
+      data: { balance },
+    });
+  } catch (err) {
+    logger.error(`[getBalance] error occurred ${err}`);
+
+    res.status(500).json({
+      status: 'failed',
+      message: err.message,
+    });
+  }
+};
+
 export default {
   signup,
   login,
@@ -290,4 +312,5 @@ export default {
   deleteCard,
   getCards,
   getCryptoBalance,
+  getBalance,
 };

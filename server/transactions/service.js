@@ -93,9 +93,15 @@ const getTransactions = async (smartEmail) => {
   return transactions;
 };
 
+const getAdminTransactions = async () => {
+  const transactions = await Transactions.find({}).lean();
+  return transactions;
+};
+
 export default {
   sendTransaction,
   getTransactions,
   rechargeOrDepositTransaction,
   buyOrSellCryptoTransaction,
+  getAdminTransactions,
 };

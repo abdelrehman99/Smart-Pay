@@ -48,6 +48,12 @@ userRouter.get(
   userController.getCryptoBalance
 );
 
+userRouter.get(
+  '/balance',
+  authController.authenticate,
+  userController.getBalance
+);
+
 userRouter.get('/cards', authController.authenticate, userController.getCards);
 
 // userRouter.get('/stats', authController.authenticate, userController.stats);
