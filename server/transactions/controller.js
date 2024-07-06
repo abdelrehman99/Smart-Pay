@@ -25,7 +25,9 @@ const sendTransaction = async (req, res, next) => {
       $or: [
         { phone: phone },
         { smartEmail: smartEmail },
-        { 'cards.number': cardNumber },
+        cardNumber
+          ? { 'cards.number': cardNumber }
+          : { smartEmail: smartEmail },
       ],
     }).lean();
 
@@ -76,7 +78,9 @@ const receiveTransaction = async (req, res, next) => {
       $or: [
         { phone: phone },
         { smartEmail: smartEmail },
-        { 'cards.number': cardNumber },
+        cardNumber
+          ? { 'cards.number': cardNumber }
+          : { smartEmail: smartEmail },
       ],
     }).lean();
 
