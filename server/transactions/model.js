@@ -19,10 +19,10 @@ const transactionsSchema = new Schema(
     type: {
       type: String,
       enum: TRANSACTION_TYPES,
-      default: TRANSACTION
+      default: TRANSACTION,
     },
     cardId: {
-      type: String
+      type: String,
     },
     amount: {
       type: Number,
@@ -33,6 +33,12 @@ const transactionsSchema = new Schema(
         },
         message: 'Transaction amount must be greater than 0',
       },
+    },
+    cryptoAmount: {
+      type: Number,
+    },
+    crypto: {
+      type: String,
     },
   },
   { timestamps: true }

@@ -62,6 +62,8 @@ const buyOrSellCryptoTransaction = async (user, type, crypto, cryptoAmount) => {
     to: email,
     type,
     amount,
+    cryptoAmount,
+    crypto
   });
 
   if (!user.cryptoBalance) {
