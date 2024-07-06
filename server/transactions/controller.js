@@ -4,6 +4,7 @@ import logger from '../../config/logger.js';
 import {
   BUY_CRYPTO,
   CRYPTO_RATES,
+  SELL_CRYPTO,
   TRANSACTION,
   UNVALID_USER_MESSAGE,
 } from '../common/constants.js';
@@ -262,6 +263,30 @@ const transactions = async (req, res, next) => {
   }
 };
 
+const cryptoTransactions = async (req, res, next) => {
+  try {
+    const user = req.user;
+    const transactions = await service.getTransactions(user.smartEmail);
+
+    logger.info(
+      `[cryptoTransactions] is returned successfully for ${user.smartEmail}.`
+    );
+    res.status(200).json({
+      status: 'success',
+      data: transactions.filter((el) => {
+        return el.type && (el.type == BUY_CRYPTO || el.type == SELL_CRYPTO);
+      }),
+    });
+  } catch (err) {
+    logger.error(`[cryptoTransactions] error occurred ${err}`);
+
+    res.status(500).json({
+      status: 'failed',
+      message: err.message,
+    });
+  }
+};
+
 const adminTransactions = async (req, res, next) => {
   try {
     const user = req.user;
@@ -294,4 +319,5 @@ export default {
   rechargeOrDeposit,
   buyOrSellCrypto,
   adminTransactions,
+  cryptoTransactions,
 };

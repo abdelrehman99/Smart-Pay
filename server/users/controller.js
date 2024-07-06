@@ -5,6 +5,10 @@ import Users from './model.js';
 import sendSms from '../common/smsService.js';
 import { OTP_MESSAGE, CRYPTO_RATES } from '../common/constants.js';
 import service from './service.js';
+import OpenAI from 'openai';
+const openai = new OpenAI({
+  organization: 'org-FzhFdPSHG6aF8nkUwCg75Q7R',
+});
 
 /**
  * @param {import('express').Request<{}, {}, showRequestBody, showRequestQuery>} req
@@ -303,6 +307,35 @@ const getBalance = async (req, res, next) => {
   }
 };
 
+const chat = async (req, res, next) => {
+  try {
+    if (!req.body.messages) return next(new Error('Please provide a message'));
+
+    const messages = req.body.messages;
+
+    const completion = await openai.chat.completions.create({
+      messages: messages,
+      model: 'gpt-3.5-turbo',
+    });
+
+    const response = completion.choices[0].message;
+
+    console.log(response);
+
+    res.status(200).json({
+      status: 'success',
+      data: { response },
+    });
+  } catch (err) {
+    logger.error(`[chat] error occurred ${err}`);
+
+    res.status(500).json({
+      status: 'failed',
+      message: err.message,
+    });
+  }
+};
+
 export default {
   signup,
   login,
@@ -313,4 +346,5 @@ export default {
   getCards,
   getCryptoBalance,
   getBalance,
+  chat,
 };

@@ -7,6 +7,11 @@ const router = express.Router();
 
 router.get('/', authController.authenticate, controller.transactions);
 router.get(
+  '/cryptoTransactions',
+  authController.authenticate,
+  controller.cryptoTransactions
+);
+router.get(
   '/adminTransactions',
   authController.authenticate,
   controller.adminTransactions

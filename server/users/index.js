@@ -36,6 +36,12 @@ userRouter.post(
   userController.addCard
 );
 
+userRouter.post(
+  '/chat',
+  authController.authenticate,
+  userController.chat
+);
+
 userRouter.delete(
   '/cards/:id',
   authController.authenticate,
